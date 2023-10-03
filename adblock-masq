@@ -3,7 +3,8 @@
 # Blocklists					: /etc/config/adblock-masq
 # Blacklist domains one per line: /etc/config/adblock-masq-blacklist
 # Whitelist domains one per line: /etc/config/adblock-masq-whitelist
-# Check if doamin is blocked	: grep test.com /tmp/dnsmasq.d/adblock-masq.txt
+# Check if domain is blocked	: grep test.com /tmp/dnsmasq.d/adblock-masq.txt
+# Check count of blocked domains: sed -n '$=' /tmp/dnsmasq.d/adblock-masq.txt
 # Update lists via cron			: 0 5 * * * /etc/init.d/adblock-masq start
 # Thanks to: @Lynx, @Wizballs, @Stangri (OpenWrt forum)
 
@@ -39,8 +40,8 @@ start()
 	# Add blacklisted, if exists
 	cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
 
-	# Remove non domain entries
-	sed -i -E '\~^[[:alnum:]][[:alnum:].-]*$~!d' /tmp/adblock-masq.txt
+	# Remove non domain entries (https://stackoverflow.com/questions/15268987/bash-based-regex-domain-name-validation)
+    grep -P '(?=^.{4,253}$)(^(?:[a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+([a-zA-Z]{2,}|xn--[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
 	# Remove duplicates and sort
 	sort -u /tmp/adblock-masq.txt -o /tmp/adblock-masq.txt
