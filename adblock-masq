@@ -27,11 +27,7 @@ start()
 	# Download blocklist(s), if more than one append
 	for blocklist_url in ${blocklist_urls}
 	do
-		if [ ! -f "/tmp/adblock-masq.txt" ]
-			then curl --max-time 60 --retry 4 --retry-delay 15 --url "${blocklist_url}" --output /tmp/adblock-masq.txt
-		else
-			curl --max-time 60 --retry 4 --retry-delay 15 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
-		fi
+		curl --max-time 60 --retry 4 --retry-delay 15 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
 	done
 
 	# Only take the entries between /.../ 
