@@ -30,8 +30,8 @@ start()
 		curl --max-time 60 --retry 4 --retry-delay 15 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
 	done
 
-	# Only take the entries between /.../
-	awk '{split($0, a, "/"); print a[2]}' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+	# Only take the entries between =/ and / for dnsmasq : apb would be '(?<=\n\|\|)(.*)(?=\^)'
+	grep -Po '(?<==\/)(.*)(?=\/)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
 	# Add blacklisted, if exists
 	cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
