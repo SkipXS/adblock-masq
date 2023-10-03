@@ -18,11 +18,11 @@ start()
 	blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/multi.txt"
 	EOT
 	fi
-				
+
 	. "/etc/config/adblock-masq"
-		
+
 	mkdir -p /tmp/dnsmasq.d
-	
+
 	# Download blocklist(s), if more than one append
 	for blocklist_url in ${blocklist_urls}
 	do
@@ -32,25 +32,25 @@ start()
 			curl --max-time 60 --retry 4 --retry-delay 15 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
 		fi
 	done
-	
+
 	# Only take the entries between /.../ 
 	awk '{split($0, a, /\//); print a[2]}' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
-	
+
 	# Add blacklisted, if exists
 	cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
-	
+
 	# Remove non domain entries
 	sed -i -E '\~^[[:alnum:]][[:alnum:].-]*$~!d' /tmp/adblock-masq.txt
-	
-	# Remove duplicates
-	awk '!seen[$0]++' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
-	
+
+	# Remove duplicates and sort
+	sort -u /tmp/adblock-masq.txt -o /tmp/adblock-masq.txt
+
 	# Remove whitelisted, if exists
 	grep -Fvxf /etc/config/adblock-masq-whitelist /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
 	# Generate actual filterlist using 0.0.0.0 : NXDOMAIN would be (awk '{print "local=/" $1 "/"}')
 	awk '{print "address=/" $1 "/#"}' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
-		
+
 	# Move generated blocklist and restart dnsmasq
 	mv /tmp/adblock-masq.txt /tmp/dnsmasq.d/adblock-masq.txt 
 	/etc/init.d/dnsmasq restart >/dev/null 
