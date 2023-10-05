@@ -13,28 +13,26 @@ STOP=4
 
 start()
 {
-	# Generate config, load config and generate /tmp/dnsmasq.d-folder
-	if [ ! -f "/etc/config/adblock-masq" ]
-		then cat > "/etc/config/adblock-masq" <<-EOT
-	blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/multi.txt"
-	EOT
-	fi
-
+	# Generate config and black-/whitelist files if not exists, load config and generate /tmp/dnsmasq.d-folder
+	[[ -f "/etc/config/adblock-masq" ]] || echo 'blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/multi.txt"' > /etc/config/adblock-masq
+	[[ -f /etc/config/adblock-masq-blacklist ]] || echo '' > /etc/config/adblock-masq-blacklist
+	[[ -f /etc/config/adblock-masq-whitelist ]] || echo '' > /etc/config/adblock-masq-whitelist
+	
 	. "/etc/config/adblock-masq"
 
 	mkdir -p /tmp/dnsmasq.d
 
-	# Download blocklist(s), if it fails remove temporary file and exit to keep the current blocklist, if more than one append
+	# Download blocklist(s), if it fails remove temporary file and exit to keep the current blocklist, if more than one blocklist append
 	for blocklist_url in ${blocklist_urls}
 	do
-		 curl -s -f --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt || { rm /tmp/adblock-masq.txt; exit; }
+		curl -s -f --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt || { rm /tmp/adblock-masq.txt; exit; }
 	done
 
 	# Only take the entries between =/ and / for dnsmasq : apb would be '(?<=\n\|\|)(.*)(?=\^)'
 	grep -Po '(?<==\/)(.*)(?=\/)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
-	# Add blacklisted, if exists
-	[[ -f /etc/config/adblock-masq-blacklist ]] && cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
+	# Add custom blacklisted
+	cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
 
 	# Remove non domain entries (https://stackoverflow.com/questions/15268987/bash-based-regex-domain-name-validation)
 	grep -P '(?=^.{4,253}$)(^(?:[a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+([a-zA-Z]{2,}|xn--[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
@@ -42,8 +40,8 @@ start()
 	# Remove duplicates and sort
 	sort -u /tmp/adblock-masq.txt -o /tmp/adblock-masq.txt
 
-	# Remove whitelisted, if exists
-	[[ -f /etc/config/adblock-masq-whitelist ]] &&  grep -Fvxf /etc/config/adblock-masq-whitelist /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+	# Remove custom whitelisted
+	grep -Fvxf /etc/config/adblock-masq-whitelist /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
 	# Generate actual filterlist using 0.0.0.0 : NXDOMAIN would be (awk '{print "local=/" $1 "/"}')
 	awk '{print "address=/" $1 "/#"}' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
