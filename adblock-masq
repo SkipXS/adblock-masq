@@ -27,7 +27,7 @@ start()
 	# Download blocklist(s), if more than one append
 	for blocklist_url in ${blocklist_urls}
 	do
-		curl --max-time 60 --retry 4 --retry-delay 15 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
+		curl --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
 	done
 
 	# Only take the entries between =/ and / for dnsmasq : apb would be '(?<=\n\|\|)(.*)(?=\^)'
