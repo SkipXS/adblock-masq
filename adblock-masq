@@ -24,10 +24,10 @@ start()
 
 	mkdir -p /tmp/dnsmasq.d
 
-	# Download blocklist(s), if more than one append
+	# Download blocklist(s), if it fails remove temporary file and exit to keep the current blocklist, if more than one append
 	for blocklist_url in ${blocklist_urls}
 	do
-		curl --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt
+		 curl -f --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt || { rm /tmp/adblock-masq.txt; exit; }
 	done
 
 	# Only take the entries between =/ and / for dnsmasq : apb would be '(?<=\n\|\|)(.*)(?=\^)'
@@ -61,6 +61,5 @@ stop(){
 
 restart()
 {
-	stop
 	start
 }
