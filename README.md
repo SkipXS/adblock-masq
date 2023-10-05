@@ -1,5 +1,9 @@
 # adblock-masq
 
+## Dependencies
+- curl : for downloading
+- grep : for blocklist processing
+
 ## Installation on OpenWrt
 ```bash
 opkg update; opkg install curl grep
