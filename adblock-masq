@@ -38,7 +38,7 @@ start()
 	grep -P '(?=^.{4,253}$)(^(?:[a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+([a-zA-Z]{2,}|xn--[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
 	# Remove duplicates and sort
-	sort -u /tmp/adblock-masq.txt -o /tmp/adblock-masq.txt
+	sort -u /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
 	# Remove custom whitelisted
 	grep -Fvxf /etc/config/adblock-masq-whitelist /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
