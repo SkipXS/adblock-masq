@@ -7,7 +7,7 @@
 ## Installation on OpenWrt
 ```bash
 opkg update; opkg install curl grep
-wget https://github.com/SkipXS/adblock-masq/raw/main/adblock-masq -O /etc/init.d/adblock-masq
+wget https://raw.githubusercontent.com/SkipXS/adblock-masq/24.10/adblock-masq -O /etc/init.d/adblock-masq
 chmod +x /etc/init.d/adblock-masq
 service adblock-masq enable
 service adblock-masq start
