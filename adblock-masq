@@ -1,11 +1,11 @@
 #!/bin/sh /etc/rc.common
 # adblock-masq : a simple adblocker using dnsmasq by SkipXS
-# Blocklists			: /etc/config/adblock-masq
+# Blocklists                    : /etc/config/adblock-masq
 # Blacklist domains one per line: /etc/config/adblock-masq-blacklist
 # Whitelist domains one per line: /etc/config/adblock-masq-whitelist
-# Check if domain is blocked	: grep test.com /tmp/dnsmasq.d/adblock-masq.txt
-# Check count of blocked domains: sed -n '$=' /tmp/dnsmasq.d/adblock-masq.txt
-# Update lists via cron		: 0 5 * * * /etc/init.d/adblock-masq start
+# Check if domain is blocked    : grep test.com /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
+# Check count of blocked domains: sed -n '$=' /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
+# Update lists via cron         : 0 5 * * * /etc/init.d/adblock-masq start
 # Thanks to: @Lynx, @Wizballs, @Stangri (OpenWrt forum)
 
 START=99
@@ -13,51 +13,52 @@ STOP=4
 
 start()
 {
-	# Generate config and black-/whitelist files if not exists, load config and generate /tmp/dnsmasq.d-folder
-	[[ -f "/etc/config/adblock-masq" ]] || echo 'blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/multi.txt"' > /etc/config/adblock-masq
-	[[ -f /etc/config/adblock-masq-blacklist ]] || echo '' > /etc/config/adblock-masq-blacklist
-	[[ -f /etc/config/adblock-masq-whitelist ]] || echo '' > /etc/config/adblock-masq-whitelist
-	
-	. "/etc/config/adblock-masq"
+        # Generate config and black-/whitelist files if not exists, load config and generate /tmp/dnsmasq.d-folder
+        [[ -f "/etc/config/adblock-masq" ]] || echo 'blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/pro.txt"' > /etc/config/adblock-masq
+        [[ -f /etc/config/adblock-masq-blacklist ]] || echo '' > /etc/config/adblock-masq-blacklist
+        [[ -f /etc/config/adblock-masq-whitelist ]] || echo '' > /etc/config/adblock-masq-whitelist
 
-	mkdir -p /tmp/dnsmasq.d
+        . "/etc/config/adblock-masq"
 
-	# Download blocklist(s), if it fails remove temporary file and exit to keep the current blocklist, if more than one blocklist append
-	for blocklist_url in ${blocklist_urls}
-	do
-		curl -s -f --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt || { rm /tmp/adblock-masq.txt; exit; }
-	done
+        # Download blocklist(s), if it fails remove temporary file and exit to keep the current blocklist, if more than one blocklist append
+        for blocklist_url in ${blocklist_urls}
+        do
+                curl -s -f --retry 10 --retry-delay 30 --url "${blocklist_url}" >> /tmp/adblock-masq.txt || { rm /tmp/adblock-masq.txt; exit; }
+        done
 
-	# Only take the entries between =/ and / for dnsmasq : apb would be '(?<=\n\|\|)(.*)(?=\^)'
-	grep -Po '(?<==\/)(.*)(?=\/)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+        # Only take the entries between =/ and / for dnsmasq : apb would be '(?<=\n\|\|)(.*)(?=\^)'
+        grep -Po '(?<==\/)(.*)(?=\/)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
-	# Add custom blacklisted
-	cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
+        # Add custom blacklisted
+        cat /etc/config/adblock-masq-blacklist >> /tmp/adblock-masq.txt
 
-	# Remove non domain entries (https://stackoverflow.com/questions/15268987/bash-based-regex-domain-name-validation)
-	grep -P '(?=^.{4,253}$)(^(?:[a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+([a-zA-Z]{2,}|xn--[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+        # Remove non domain entries (https://stackoverflow.com/questions/15268987/bash-based-regex-domain-name-validation)
+        grep -P '(?=^.{4,253}$)(^(?:[a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+([a-zA-Z]{2,}|xn--[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$)' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
-	# Remove duplicates and sort
-	sort -u /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+        # Remove duplicates and sort
+        sort -u /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
-	# Remove custom whitelisted
-	grep -Fvxf /etc/config/adblock-masq-whitelist /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+        # Remove custom whitelisted
+        grep -Fvxf /etc/config/adblock-masq-whitelist /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
-	# Generate actual filterlist using 0.0.0.0 : NXDOMAIN would be (awk '{print "local=/" $1 "/"}')
-	awk '{print "address=/" $1 "/#"}' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
+        # Generate actual filterlist using 0.0.0.0 : NXDOMAIN would be (awk '{print "local=/" $1 "/"}')
+        awk '{print "address=/" $1 "/#"}' /tmp/adblock-masq.txt > /tmp/tmp.txt && mv /tmp/tmp.txt /tmp/adblock-masq.txt
 
-	# Move generated blocklist and restart dnsmasq
-	mv /tmp/adblock-masq.txt /tmp/dnsmasq.d/adblock-masq.txt
-	/etc/init.d/dnsmasq restart
+        # Move generated blocklist and restart dnsmasq
+        mv /tmp/adblock-masq.txt /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
+        # Small tweak to test
+        echo 'use-stale-cache' > /tmp/dnsmasq.cfg01411c.d/adblock-masq.conf
+        #
+        /etc/init.d/dnsmasq restart
 }
 
 stop(){
-	# Remove generated blocklist and restart dnsmasq
-	rm /tmp/dnsmasq.d/adblock-masq.txt
-	/etc/init.d/dnsmasq restart
+        # Remove generated blocklist and restart dnsmasq
+        rm /tmp/dnsmasq.cfg01411c.d/adblock-masq.*
+        /etc/init.d/dnsmasq restart
 }
 
 restart()
 {
-	start
+        start
 }
