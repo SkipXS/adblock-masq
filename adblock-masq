@@ -46,9 +46,9 @@ start()
 
         # Move generated blocklist and restart dnsmasq
         mv /tmp/adblock-masq.txt /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
-	# Small tweak to test
-	echo 'use-stale-cache' > /tmp/dnsmasq.cfg01411c.d/adblock-masq.conf
-	#
+		# Small tweak to test
+		echo 'use-stale-cache' > /tmp/dnsmasq.cfg01411c.d/adblock-masq.conf
+		#
         /etc/init.d/dnsmasq restart
 }
 
