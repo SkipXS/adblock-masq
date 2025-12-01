@@ -14,7 +14,7 @@ STOP=4
 start()
 {
         # Generate config and black-/whitelist files if not exists, load config and generate /tmp/dnsmasq.d-folder
-        [[ -f "/etc/config/adblock-masq" ]] || echo 'blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/multi.txt"' > /etc/config/adblock-masq
+        [[ -f "/etc/config/adblock-masq" ]] || echo 'blocklist_urls="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/dnsmasq/pro.txt"' > /etc/config/adblock-masq
         [[ -f /etc/config/adblock-masq-blacklist ]] || echo '' > /etc/config/adblock-masq-blacklist
         [[ -f /etc/config/adblock-masq-whitelist ]] || echo '' > /etc/config/adblock-masq-whitelist
 
@@ -46,6 +46,9 @@ start()
 
         # Move generated blocklist and restart dnsmasq
         mv /tmp/adblock-masq.txt /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
+	# Small tweak to test
+	echo 'use-stale-cache' > /tmp/dnsmasq.cfg01411c.d/adblock-masq.conf
+	#
         /etc/init.d/dnsmasq restart
 }
 
