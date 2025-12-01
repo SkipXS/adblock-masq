@@ -54,7 +54,7 @@ start()
 
 stop(){
         # Remove generated blocklist and restart dnsmasq
-        rm /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
+        rm /tmp/dnsmasq.cfg01411c.d/adblock-masq.*
         /etc/init.d/dnsmasq restart
 }
 
