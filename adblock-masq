@@ -3,8 +3,8 @@
 # Blocklists                    : /etc/config/adblock-masq
 # Blacklist domains one per line: /etc/config/adblock-masq-blacklist
 # Whitelist domains one per line: /etc/config/adblock-masq-whitelist
-# Check if domain is blocked    : grep test.com /tmp/dnsmasq.d/adblock-masq.txt
-# Check count of blocked domains: sed -n '$=' /tmp/dnsmasq.d/adblock-masq.txt
+# Check if domain is blocked    : grep test.com /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
+# Check count of blocked domains: sed -n '$=' /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
 # Update lists via cron         : 0 5 * * * /etc/init.d/adblock-masq start
 # Thanks to: @Lynx, @Wizballs, @Stangri (OpenWrt forum)
 
@@ -46,9 +46,9 @@ start()
 
         # Move generated blocklist and restart dnsmasq
         mv /tmp/adblock-masq.txt /tmp/dnsmasq.cfg01411c.d/adblock-masq.txt
-		# Small tweak to test
-		echo 'use-stale-cache' > /tmp/dnsmasq.cfg01411c.d/adblock-masq.conf
-		#
+        # Small tweak to test
+        echo 'use-stale-cache' > /tmp/dnsmasq.cfg01411c.d/adblock-masq.conf
+        #
         /etc/init.d/dnsmasq restart
 }
 
